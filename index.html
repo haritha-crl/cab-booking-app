@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CabNow - Advanced Cab Booking App</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --yellow: #FFD700;
+      --black: #0f0f10;
+      --dark: #18181a;
+      --muted: #6c757d;
+      --bg: #0f0f10;
+      --surface: #171719;
+      --surface-2: #1b1b1d;
+      --surface-3: #19191b;
+      --text: #ffffff;
+      --text-soft: #cfcfcf;
+      --border: rgba(255,255,255,0.12);
+      --shadow: rgba(0,0,0,0.35);
+    }
+
+    body.theme-light {
+      --bg: #f8f3da;
+      --surface: #fffdf2;
+      --surface-2: #ffffff;
+      --surface-3: #fffef8;
+      --text: #111111;
+      --text-soft: #555555;
+      --border: rgba(0,0,0,0.12);
+      --shadow: rgba(0,0,0,0.12);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #111, var(--bg));
+      color: var(--text);
+      min-height: 100vh;
+      transition: background .25s ease, color .25s ease;
+    }
+
+    .app-shell {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--bg);
+      box-shadow: 0 0 30px var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition: background .25s ease;
+    }
+
+    .page {
+      display: none;
+      min-height: 100vh;
+      padding: 24px 18px 40px;
+      animation: fadeSlide 0.35s ease;
+      color: var(--text);
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand {
+      color: var(--yellow);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 20;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background: var(--yellow);
+      color: var(--black);
+      font-size: 1.1rem;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+    }
+
+    .btn-yellow {
+      background: var(--yellow);
+      color: var(--black);
+      border: none;
+      font-weight: 700;
+    }
+
+    .btn-yellow:hover {
+      background: #ffdf33;
+      color: var(--black);
+    }
+
+    .btn-outline-yellow {
+      border: 1px solid var(--yellow);
+      color: var(--yellow);
+      background: transparent;
+    }
+
+    .btn-outline-yellow:hover {
+      background: var(--yellow);
+      color: var(--black);
+    }
+
+    .hero-map {
+      background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=900&q=80');
+      background-size: cover;
+      background-position: center;
+      border-radius: 20px;
+      min-height: 220px;
+      position: relative;
+    }
+
+    .route-card {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+    }
+
+    body.theme-light .route-card {
+      background: rgba(255,255,255,0.76);
+      color: var(--text);
+    }
+
+    .car-card {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--surface-2);
+      transition: transform .2s ease, border-color .2s ease;
+    }
+
+    .car-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--yellow);
+    }
+
+    .car-card img {
+      height: 120px;
+      object-fit: cover;
+      width: 100%;
+    }
+
+    .tracking-map {
+      background: linear-gradient(rgba(0,0,0,0.18), rgba(0,0,0,0.22)), url('https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?auto=format&fit=crop&w=900&q=80');
+      background-size: cover;
+      background-position: center;
+      border-radius: 20px;
+      min-height: 260px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .route-line {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent 0%, transparent 38%, var(--yellow) 38%, var(--yellow) 42%, transparent 42%, transparent 100%);
+      opacity: 0.95;
+      transform: rotate(-10deg);
+      pointer-events: none;
+    }
+
+    .car-icon {
+      position: absolute;
+      top: 48%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2rem;
+      filter: drop-shadow(0 0 5px rgba(0,0,0,0.4));
+    }
+
+    .payment-option {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface-3);
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text);
+    }
+
+    .payment-option.active {
+      border-color: var(--yellow);
+      box-shadow: inset 0 0 0 1px var(--yellow);
+    }
+
+    .promo-banner {
+      background: linear-gradient(90deg, var(--yellow), #ffe66a);
+      color: var(--black);
+      border-radius: 16px;
+      padding: 14px;
+      font-weight: 700;
+    }
+
+    .star-btn {
+      font-size: 1.7rem;
+      background: transparent;
+      border: none;
+      color: #5d5d5d;
+      transition: color .2s ease;
+    }
+
+    .star-btn.active {
+      color: var(--yellow);
+    }
+
+    .tip-pill {
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+
+    .tip-pill.active {
+      background: var(--yellow);
+      color: var(--black);
+      border-color: var(--yellow);
+    }
+
+    .card {
+      background-color: var(--surface) !important;
+      color: var(--text);
+      border-color: var(--border) !important;
+    }
+
+    .form-control, .form-check-input {
+      background-color: var(--surface-2);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .text-light-emphasis {
+      color: var(--text-soft) !important;
+    }
+
+    .status-completed { color: #2ecc71; }
+    .status-ongoing { color: var(--yellow); }
+
+    @media (min-width: 768px) {
+      .app-shell { max-width: 860px; }
+      .page { padding: 32px 28px 48px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <button id="themeToggle" class="theme-toggle" title="Toggle theme">🌙</button>
+
+    <section id="page-login" class="page active">
+      <div class="text-center py-5">
+        <div class="mb-4">
+          <h1 class="brand display-4">CabNow</h1>
+          <p class="text-light-emphasis">Fast, safe, and smart cab rides.</p>
+        </div>
+        <div class="card border-0 rounded-4 p-4" style="background:#171719;">
+          <h3 class="mb-3">Login</h3>
+          <label for="phone" class="form-label text-start d-block">Phone Number</label>
+          <input id="phone" type="tel" class="form-control form-control-lg mb-3" placeholder="Enter phone number" />
+          <button class="btn btn-yellow w-100 btn-lg" onclick="showPage('page-home')">Get OTP</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-home" class="page">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <p class="mb-0 text-light-emphasis">Welcome back</p>
+          <h4 class="mb-0">Book a ride</h4>
+        </div>
+        <span class="badge rounded-pill bg-warning text-dark px-3 py-2">CabNow</span>
+      </div>
+
+      <div class="hero-map p-3 mb-4">
+        <div class="route-card p-3 text-white">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-semibold">Pickup</span>
+            <span class="badge bg-warning text-dark">Live</span>
+          </div>
+          <div class="fw-bold">Kurnool Bus Stand</div>
+          <div class="small text-light-emphasis">to</div>
+          <div class="fw-bold">Airport</div>
+        </div>
+      </div>
+
+      <h5 class="mb-3">Choose your ride</h5>
+      <div class="row g-3">
+        <div class="col-6">
+          <div class="car-card">
+            <img src="https://images.unsplash.com/photo-1553440569-bcc63803a83d?auto=format&fit=crop&w=500&q=80" alt="Mini car" />
+            <div class="p-3">
+              <h6 class="fw-bold">Mini</h6>
+              <p class="mb-2 small text-light-emphasis">3 min away</p>
+              <p class="mb-2 fw-semibold">₹320</p>
+              <button class="btn btn-yellow w-100" onclick="selectCar('Mini', 320, '3 min away')">Request Cab</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="car-card">
+            <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=500&q=80" alt="Sedan car" />
+            <div class="p-3">
+              <h6 class="fw-bold">Sedan</h6>
+              <p class="mb-2 small text-light-emphasis">4 min away</p>
+              <p class="mb-2 fw-semibold">₹420</p>
+              <button class="btn btn-yellow w-100" onclick="selectCar('Sedan', 420, '4 min away')">Request Cab</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="car-card">
+            <img src="https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=500&q=80" alt="SUV" />
+            <div class="p-3">
+              <h6 class="fw-bold">SUV</h6>
+              <p class="mb-2 small text-light-emphasis">5 min away</p>
+              <p class="mb-2 fw-semibold">₹620</p>
+              <button class="btn btn-yellow w-100" onclick="selectCar('SUV', 620, '5 min away')">Request Cab</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="car-card">
+            <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=500&q=80" alt="Rental car" />
+            <div class="p-3">
+              <h6 class="fw-bold">Rental</h6>
+              <p class="mb-2 small text-light-emphasis">6 min away</p>
+              <p class="mb-2 fw-semibold">₹780</p>
+              <button class="btn btn-yellow w-100" onclick="selectCar('Rental', 780, '6 min away')">Request Cab</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="car-card">
+            <img src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=500&q=80" alt="Premium car" />
+            <div class="p-3">
+              <h6 class="fw-bold">Premium</h6>
+              <p class="mb-2 small text-light-emphasis">5 min away</p>
+              <p class="mb-2 fw-semibold">₹850</p>
+              <button class="btn btn-yellow w-100" onclick="selectCar('Premium', 850, '5 min away')">Request Cab</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="car-card">
+            <img src="https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=500&q=80" alt="Electric car" />
+            <div class="p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0">Electric</h6>
+                <span class="badge bg-success">Eco Friendly</span>
+              </div>
+              <p class="mb-2 small text-light-emphasis">7 min away</p>
+              <p class="mb-2 fw-semibold">₹480</p>
+              <button class="btn btn-yellow w-100" onclick="selectCar('Electric', 480, '7 min away')">Request Cab</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="car-card">
+            <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=500&q=80" alt="Luxury car" />
+            <div class="p-3">
+              <h6 class="fw-bold">Luxury</h6>
+              <p class="mb-2 small text-light-emphasis">8 min away</p>
+              <p class="mb-2 fw-semibold">₹1200</p>
+              <button class="btn btn-yellow w-100" onclick="selectCar('Luxury', 1200, '8 min away')">Request Cab</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="car-card">
+            <img src="https://via.placeholder.com/500x300/FFD700/000000?text=Auto+Rickshaw" alt="Auto rickshaw" />
+            <div class="p-3">
+              <h6 class="fw-bold">Auto</h6>
+              <p class="mb-2 small text-light-emphasis">2 min away</p>
+              <p class="mb-2 fw-semibold">₹150</p>
+              <button class="btn btn-yellow w-100" onclick="selectCar('Auto', 150, '2 min away')">Request Cab</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="page-tracking" class="page">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <p class="mb-0 text-light-emphasis">Ride in progress</p>
+          <h4 class="mb-0">Live tracking</h4>
+        </div>
+        <span class="badge rounded-pill bg-warning text-dark px-3 py-2">On the way</span>
+      </div>
+
+      <div class="tracking-map mb-4">
+        <div class="route-line"></div>
+        <div class="car-icon">🚗</div>
+      </div>
+
+      <div class="card border-0 rounded-4 p-3 mb-3">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <img src="https://placehold.co/72x72/FFD700/000000?text=RK" alt="Driver" class="rounded-circle border border-warning" style="width:72px;height:72px;object-fit:cover;" />
+          <div>
+            <h6 class="mb-1">Ramesh Kumar</h6>
+            <p class="mb-1 small text-light-emphasis">⭐ 4.8</p>
+            <p class="mb-0 small text-light-emphasis">Swift Dzire • AP21 AB 1234</p>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between mb-2"><span>ETA</span><strong>4 mins</strong></div>
+        <div class="d-flex justify-content-between"><span>Car</span><strong>Swift Dzire</strong></div>
+      </div>
+
+      <div class="card border-0 rounded-4 p-3 mb-3">
+        <h6 class="mb-2">Selected ride</h6>
+        <div class="d-flex justify-content-between mb-2"><span>Ride</span><strong id="trackingRideName">Sedan</strong></div>
+        <div class="d-flex justify-content-between mb-2"><span>Price</span><strong id="trackingRidePrice">₹420</strong></div>
+        <div class="d-flex justify-content-between"><span>ETA</span><strong id="trackingRideEta">4 min away</strong></div>
+      </div>
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-yellow" onclick="showPage('page-payment')">Call Driver</button>
+        <button class="btn btn-outline-yellow" onclick="showPage('page-payment')">Share Ride</button>
+        <button class="btn btn-danger" onclick="triggerSos()">SOS Emergency</button>
+        <button class="btn btn-outline-secondary" onclick="showPage('page-home')">Cancel Ride</button>
+      </div>
+    </section>
+
+    <section id="page-payment" class="page">
+      <h4 class="mb-3">Payment</h4>
+      <div class="card border-0 rounded-4 p-3 mb-3">
+        <h6 class="mb-2">Trip summary</h6>
+        <p class="mb-1 fw-bold">Kurnool to Airport - <span id="tripAmount">₹420</span></p>
+        <p class="mb-0 small text-light-emphasis">Distance: 15 km • 20 mins</p>
+        <p id="promoSummary" class="mt-2 mb-0 small text-light-emphasis">Base fare: ₹420</p>
+      </div>
+
+      <div class="mb-3">
+        <h6 class="mb-2">Choose payment</h6>
+        <div class="d-grid gap-2">
+          <button class="payment-option active" onclick="togglePayment(this)"><span>💵 Cash</span><span>✓</span></button>
+          <button class="payment-option" onclick="togglePayment(this)"><span>📱 UPI</span><span>◌</span></button>
+          <button class="payment-option" onclick="togglePayment(this)"><span>💳 Card</span><span>◌</span></button>
+          <button class="payment-option" onclick="togglePayment(this)"><span>👛 Wallet</span><span>◌</span></button>
+        </div>
+      </div>
+
+      <div class="card border-0 rounded-4 p-3 mb-3">
+        <h6 class="mb-2">Enter Promo Code</h6>
+        <div class="input-group">
+          <input id="promoCode" class="form-control" placeholder="CAB20" />
+          <button class="btn btn-yellow" onclick="applyPromo()">Apply</button>
+        </div>
+        <div id="promoMessage" class="small mt-2 text-light-emphasis">Try CAB20 for 20% off</div>
+      </div>
+
+      <div class="promo-banner mb-3">
+        Taxi Now Plus - Get 20% Off
+      </div>
+
+      <button class="btn btn-yellow w-100" onclick="showPage('page-history')">Pay Now</button>
+    </section>
+
+    <section id="page-history" class="page">
+      <h4 class="mb-3">My Trips</h4>
+      <div class="d-grid gap-2">
+        <div class="card border-0 rounded-4 p-3" style="background:#171719;">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-1">Kurnool to Airport</h6>
+              <p class="mb-0 small text-light-emphasis">15 km • ₹420</p>
+            </div>
+            <span class="status-completed fw-semibold">Completed ✅</span>
+          </div>
+        </div>
+        <div class="card border-0 rounded-4 p-3" style="background:#171719;">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-1">Kurnool to City Mall</h6>
+              <p class="mb-0 small text-light-emphasis">8 km • ₹240</p>
+            </div>
+            <span class="status-ongoing fw-semibold">Ongoing ⏳</span>
+          </div>
+        </div>
+        <div class="card border-0 rounded-4 p-3" style="background:#171719;">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-1">Kurnool to Railway Station</h6>
+              <p class="mb-0 small text-light-emphasis">10 km • ₹300</p>
+            </div>
+            <span class="status-completed fw-semibold">Completed ✅</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-yellow w-100 mt-4" onclick="showPage('page-rating')">Continue to Rating</button>
+    </section>
+
+    <section id="page-rating" class="page">
+      <h4 class="mb-3">Rate your trip</h4>
+      <div class="card border-0 rounded-4 p-3 mb-3" style="background:#171719;">
+        <div class="text-center mb-3">
+          <div id="stars" class="d-flex justify-content-center gap-2">
+            <button class="star-btn active" data-value="1" onclick="setRating(1)">★</button>
+            <button class="star-btn active" data-value="2" onclick="setRating(2)">★</button>
+            <button class="star-btn active" data-value="3" onclick="setRating(3)">★</button>
+            <button class="star-btn" data-value="4" onclick="setRating(4)">★</button>
+            <button class="star-btn" data-value="5" onclick="setRating(5)">★</button>
+          </div>
+        </div>
+
+        <h6 class="mb-2">What did you like?</h6>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="comfort" />
+          <label class="form-check-label" for="comfort">Comfortable Driving</label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="clean" />
+          <label class="form-check-label" for="clean">Clean Car</label>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="music" />
+          <label class="form-check-label" for="music">Good Music</label>
+        </div>
+
+        <h6 class="mb-2">Add a tip</h6>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <button class="tip-pill active" onclick="selectTip(this, 20)">₹20</button>
+          <button class="tip-pill" onclick="selectTip(this, 50)">₹50</button>
+          <button class="tip-pill" onclick="selectTip(this, 100)">₹100</button>
+        </div>
+
+        <button class="btn btn-yellow w-100" onclick="submitRating()">Submit Rating</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    let selectedCar = { name: 'Sedan', price: 420, eta: '4 min away' };
+    let baseAmount = selectedCar.price;
+
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      updateRideSummary();
+    }
+
+    function selectCar(name, price, eta) {
+      selectedCar = { name, price, eta };
+      baseAmount = price;
+      localStorage.setItem('selectedCar', JSON.stringify(selectedCar));
+      showPage('page-tracking');
+    }
+
+    function updateRideSummary() {
+      const storedCar = localStorage.getItem('selectedCar');
+      if (storedCar) {
+        selectedCar = JSON.parse(storedCar);
+        baseAmount = selectedCar.price;
+      }
+
+      const rideName = document.getElementById('trackingRideName');
+      const ridePrice = document.getElementById('trackingRidePrice');
+      const rideEta = document.getElementById('trackingRideEta');
+      const amountLabel = document.getElementById('tripAmount');
+      const summary = document.getElementById('promoSummary');
+
+      if (rideName) rideName.textContent = selectedCar.name;
+      if (ridePrice) ridePrice.textContent = `₹${selectedCar.price}`;
+      if (rideEta) rideEta.textContent = selectedCar.eta;
+      if (amountLabel) amountLabel.textContent = `₹${selectedCar.price}`;
+      if (summary) summary.textContent = `Base fare: ₹${selectedCar.price}`;
+    }
+
+    function toggleTheme() {
+      const isLight = body.classList.toggle('theme-light');
+      localStorage.setItem('cabnow-theme', isLight ? 'light' : 'dark');
+      themeToggle.textContent = isLight ? '☀️' : '🌙';
+      themeToggle.setAttribute('title', isLight ? 'Switch to dark mode' : 'Switch to light mode');
+    }
+
+    function togglePayment(button) {
+      document.querySelectorAll('.payment-option').forEach(item => {
+        item.classList.remove('active');
+        item.querySelector('span:last-child').textContent = '◌';
+      });
+      button.classList.add('active');
+      button.querySelector('span:last-child').textContent = '✓';
+    }
+
+    function applyPromo() {
+      const code = document.getElementById('promoCode').value.trim().toUpperCase();
+      const message = document.getElementById('promoMessage');
+      const amountLabel = document.getElementById('tripAmount');
+      const summary = document.getElementById('promoSummary');
+
+      if (code === 'CAB20') {
+        const discountedAmount = Math.round(baseAmount * 0.8);
+        amountLabel.textContent = `₹${discountedAmount}`;
+        summary.textContent = `Saved ₹${baseAmount - discountedAmount} with promo code`;
+        message.textContent = 'Promo Applied!';
+        message.className = 'small mt-2 text-success fw-semibold';
+      } else {
+        amountLabel.textContent = `₹${baseAmount}`;
+        summary.textContent = `Base fare: ₹${baseAmount}`;
+        message.textContent = 'Invalid promo code';
+        message.className = 'small mt-2 text-danger';
+      }
+    }
+
+    function setRating(value) {
+      const buttons = document.querySelectorAll('.star-btn');
+      buttons.forEach(btn => {
+        btn.classList.toggle('active', Number(btn.dataset.value) <= value);
+      });
+    }
+
+    function selectTip(button) {
+      document.querySelectorAll('.tip-pill').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+    }
+
+    function triggerSos() {
+      alert('Emergency contact alerted. Help is on the way');
+    }
+
+    function submitRating() {
+      alert('Thanks for rating your CabNow ride!');
+      showPage('page-login');
+    }
+
+    const savedTheme = localStorage.getItem('cabnow-theme');
+    if (savedTheme === 'light') {
+      body.classList.add('theme-light');
+      themeToggle.textContent = '☀️';
+    } else {
+      themeToggle.textContent = '🌙';
+    }
+
+    updateRideSummary();
+    themeToggle.addEventListener('click', toggleTheme);
+  </script>
+</body>
+</html>

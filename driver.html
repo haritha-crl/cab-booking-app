@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Driver Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="card wide-card">
+        <h1>Driver Dashboard</h1>
+        <p class="subtitle">All booked rides</p>
+        <div id="ride-list" class="ride-grid"></div>
+      </div>
+    </div>
+
+    <script>
+      // Fetch bookings from the backend and display them in cards.
+      async function loadRides() {
+        try {
+          const response = await fetch('/bookings');
+          const rides = await response.json();
+          const list = document.getElementById('ride-list');
+
+          if (!rides.length) {
+            list.innerHTML = '<div class="ride-card empty">No rides booked yet.</div>';
+            return;
+          }
+
+          list.innerHTML = rides
+            .map(
+              (ride) => `
+                <div class="ride-card">
+                  <p><strong>Name:</strong> ${ride.name}</p>
+                  <p><strong>Phone:</strong> ${ride.phone}</p>
+                  <p><strong>Pickup:</strong> ${ride.pickup}</p>
+                  <p><strong>Drop:</strong> ${ride.drop}</p>
+                  <p><strong>Fare:</strong> ₹${ride.fare}</p>
+                </div>
+              `
+            )
+            .join('');
+        } catch (error) {
+          document.getElementById('ride-list').innerHTML = '<div class="ride-card empty">Unable to load rides.</div>';
+        }
+      }
+
+      loadRides();
+    </script>
+  </body>
+</html>

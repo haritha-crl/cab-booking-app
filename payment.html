@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Payment</h1>
+        <div class="detail-box">
+          <p><strong>Pickup:</strong> <span id="pickup">-</span></p>
+          <p><strong>Drop:</strong> <span id="drop">-</span></p>
+          <p><strong>Fare:</strong> <span id="fare">-</span></p>
+        </div>
+        <button id="pay-now">Pay Now - UPI/Card</button>
+        <button id="pay-cash">Pay to Driver - Cash</button>
+      </div>
+    </div>
+
+    <script>
+      // Read booking details from the URL and show them.
+      function getQueryParam(name) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(name);
+      }
+
+      const pickup = getQueryParam('pickup');
+      const drop = getQueryParam('drop');
+      const fare = getQueryParam('fare');
+
+      if (!pickup || !drop || !fare) {
+        window.location.href = 'index.html';
+      }
+
+      document.getElementById('pickup').textContent = pickup;
+      document.getElementById('drop').textContent = drop;
+      document.getElementById('fare').textContent = `₹${fare}`;
+
+      document.getElementById('pay-now').addEventListener('click', () => {
+        alert('Payment Successful');
+        window.location.href = 'driver.html';
+      });
+
+      document.getElementById('pay-cash').addEventListener('click', () => {
+        window.location.href = 'driver.html';
+      });
+    </script>
+  </body>
+</html>

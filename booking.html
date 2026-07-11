@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Booking</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Cab Booking</h1>
+        <p class="subtitle">Welcome, <span id="user-name">Guest</span></p>
+        <form id="route-form">
+          <label for="pickup">Pickup</label>
+          <input id="pickup" name="pickup" type="text" placeholder="Enter pickup location" required />
+
+          <label for="drop">Drop</label>
+          <input id="drop" name="drop" type="text" placeholder="Enter drop location" required />
+
+          <label for="distance">Distance (km)</label>
+          <input id="distance" name="distance" type="number" placeholder="Enter distance" min="1" value="1" required />
+
+          <button type="submit">Proceed to Payment</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // Load user details from localStorage and redirect if missing.
+      const name = localStorage.getItem('userName');
+      const phone = localStorage.getItem('userPhone');
+
+      if (!name || !phone) {
+        window.location.href = 'index.html';
+      }
+
+      document.getElementById('user-name').textContent = name || 'Guest';
+
+      document.getElementById('route-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const pickup = document.getElementById('pickup').value.trim();
+        const drop = document.getElementById('drop').value.trim();
+        const distance = Number(document.getElementById('distance').value);
+
+        if (!pickup || !drop || !distance || distance <= 0) {
+          alert('Please enter pickup, drop, and a valid distance.');
+          return;
+        }
+
+        const fare = Math.max(50, Math.round(distance * 10));
+
+        try {
+          // Save the ride to the backend before moving to payment.
+          const response = await fetch('/book', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, phone, pickup, drop, fare })
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.message || 'Unable to save booking');
+          }
+
+          const url = `payment.html?pickup=${encodeURIComponent(pickup)}&drop=${encodeURIComponent(drop)}&fare=${encodeURIComponent(fare)}`;
+          window.location.href = url;
+        } catch (error) {
+          alert(error.message);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "cab-booking-app",
+  "version": "1.0.0",
+  "description": "A simple cab booking web application",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
