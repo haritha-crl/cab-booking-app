@@ -18,4 +18,19 @@ CabNow is a responsive single-page cab booking experience built with HTML, CSS, 
 ## Project Structure
 - index.html - Main app file
 - assets/ - Image assets and placeholders
-- README.md - Project overview
+- README.md - Project overview## Screenshots
+
+**Home Page**
+![Home](home)
+
+**Payment Page**
+![Payment](payment)
+
+**Rating Page**
+![Rating](rating)
+
+**Live Tracking**
+![Tracking](tracking)
+
+**Demo**
+![Demo](demo)
