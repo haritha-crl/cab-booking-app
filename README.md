@@ -34,5 +34,7 @@ CabNow is a responsive single-page cab booking experience built with HTML, CSS, 
 **tracking**
 ![tracking](tracking.png)
 
-**demo**
-![demo](demo.png)
+
+## demo Video
+
+![demo GIF](demo.gif)
